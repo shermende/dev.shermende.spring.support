@@ -2,10 +2,9 @@ package dev.shermende.support.spring.aop.intercept;
 
 import dev.shermende.support.spring.aop.intercept.annotation.Intercept;
 import dev.shermende.support.spring.aop.intercept.annotation.InterceptArgument;
-import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.Aspects;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -33,29 +32,26 @@ public class InterceptAspectWrongSupportTest {
     @EnableAspectJAutoProxy(proxyTargetClass = true)
     public static class InterceptAspectWrongSupportTestConfiguration {
         @Bean
-        public InterceptAspect interceptAspect(BeanFactory factory) {
-            return new InterceptAspect(factory);
+        public InterceptAspect interceptAspect() {
+            return Aspects.aspectOf(InterceptAspect.class);
         }
 
         @Bean
-        public InterceptResultAspect interceptResultAspect(BeanFactory factory) {
-            return new InterceptResultAspect(factory);
+        public InterceptResultAspect interceptResultAspect() {
+            return Aspects.aspectOf(InterceptResultAspect.class);
         }
     }
 
-    @Slf4j
     @Component
     public static class InterceptAspectWrongSupportTestComponent {
         @Intercept
         public Object convert(
             @InterceptArgument(InterceptAspectWrongSupportTestInterceptor.class) Object payload
         ) {
-            log.debug("unreachable code. exception in interceptor.");
             return payload;
         }
     }
 
-    @Slf4j
     @Component
     public static class InterceptAspectWrongSupportTestInterceptor implements Interceptor {
         @Override
@@ -69,7 +65,6 @@ public class InterceptAspectWrongSupportTest {
         public void intercept(
             Object o
         ) {
-            log.debug("unreachable code. exception in supports(...) method.");
         }
     }
 }

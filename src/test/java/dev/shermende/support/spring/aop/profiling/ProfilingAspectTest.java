@@ -4,6 +4,7 @@ import dev.shermende.support.spring.aop.profiling.annotation.Profiling;
 import dev.shermende.support.spring.jmx.JmxControl;
 import dev.shermende.support.spring.jmx.impl.ToggleJmxControlImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.Aspects;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,24 +16,23 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {ProfilingAspectTest.ProfilingAspectTestConfiguration.class})
 public class ProfilingAspectTest {
 
     @SpyBean
-    private ProfilingAspect aspect;
+    private JmxControl jmxControl;
 
     @Autowired
     private ProfilingAspectTest.ProfilingAspectTestComponent component;
 
     @Test
-    public void profiling() {
+    public void profiling() throws Throwable {
         component.convert(new Object());
-        verify(aspect, times(1)).profiling(any());
+        then(jmxControl).should(times(1)).isEnabled();
     }
 
     @ComponentScan
@@ -44,8 +44,8 @@ public class ProfilingAspectTest {
         }
 
         @Bean
-        public ProfilingAspect interceptAspect(JmxControl jmxControl) {
-            return new ProfilingAspect(jmxControl);
+        public ProfilingAspect interceptAspect() {
+            return Aspects.aspectOf(ProfilingAspect.class);
         }
     }
 

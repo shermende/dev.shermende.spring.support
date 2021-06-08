@@ -4,19 +4,10 @@ import dev.shermende.support.spring.aop.logging.LoggingAspect;
 import dev.shermende.support.spring.aop.logging.annotation.Logging;
 import dev.shermende.support.spring.jmx.JmxControl;
 import dev.shermende.support.spring.jmx.impl.ToggleJmxControlImpl;
-import lombok.extern.slf4j.Slf4j;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Level;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.aspectj.lang.Aspects;
+import org.openjdk.jmh.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 @Fork(1)
 @Threads(10)
 @Warmup(iterations = 3)
@@ -35,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class LoggingAspectBenchmark {
+    private static final Logger log = LoggerFactory.getLogger(LoggingAspectBenchmark.class);
 
     private ConfigurableApplicationContext context;
 
@@ -55,9 +46,10 @@ public class LoggingAspectBenchmark {
         public JmxControl jmxControl() {
             return new ToggleJmxControlImpl(true);
         }
+
         @Bean
-        public LoggingAspect loggingAspect(JmxControl jmxControl) {
-            return new LoggingAspect(jmxControl);
+        public LoggingAspect loggingAspect() {
+            return Aspects.aspectOf(LoggingAspect.class);
         }
     }
 

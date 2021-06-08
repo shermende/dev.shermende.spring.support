@@ -3,15 +3,13 @@ package dev.shermende.support.spring.aop.intercept;
 import dev.shermende.support.spring.aop.intercept.annotation.Intercept;
 import dev.shermende.support.spring.aop.intercept.annotation.InterceptArgument;
 import dev.shermende.support.spring.aop.intercept.annotation.InterceptResult;
-import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.Aspects;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -39,20 +37,18 @@ public class InterceptAspectTest {
     }
 
     @ComponentScan
-    @EnableAspectJAutoProxy(proxyTargetClass = true)
     public static class InterceptAspectTestConfiguration {
         @Bean
-        public InterceptAspect interceptAspect(BeanFactory factory) {
-            return new InterceptAspect(factory);
+        public InterceptAspect interceptAspect() {
+            return Aspects.aspectOf(InterceptAspect.class);
         }
 
         @Bean
-        public InterceptResultAspect interceptResultAspect(BeanFactory factory) {
-            return new InterceptResultAspect(factory);
+        public InterceptResultAspect interceptResultAspect() {
+            return Aspects.aspectOf(InterceptResultAspect.class);
         }
     }
 
-    @Slf4j
     @Component
     public static class InterceptAspectTestComponent {
         @Intercept
@@ -64,7 +60,6 @@ public class InterceptAspectTest {
         }
     }
 
-    @Slf4j
     @Component
     public static class InterceptAspectTestInterceptor implements Interceptor {
         @Override
@@ -78,7 +73,6 @@ public class InterceptAspectTest {
         public void intercept(
             Object payload
         ) {
-            log.debug("interceptor working... {}", payload);
         }
     }
 }

@@ -1,30 +1,29 @@
 package dev.shermende.support.spring.aop.profiling;
 
 import dev.shermende.support.spring.jmx.JmxControl;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Method;
 
 /**
  *
  */
-@Slf4j
 @Aspect
-@RequiredArgsConstructor
 public class ProfilingAspect implements InitializingBean {
+    private static final Logger log = LoggerFactory.getLogger(ProfilingAspect.class);
 
-    private final JmxControl jmxControl;
+    @Autowired
+    private JmxControl jmxControl;
 
-    @SneakyThrows
-    @Around("@annotation(dev.shermende.support.spring.aop.profiling.annotation.Profiling)")
-    public Object profiling(ProceedingJoinPoint proceedingJoinPoint) {
+    @Around("@annotation(dev.shermende.support.spring.aop.profiling.annotation.Profiling) && execution(public * *(..))")
+    public Object profiling(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         // do nothing if disabled
         if (!jmxControl.isEnabled()) return proceedingJoinPoint.proceed();
         // logging if enabled
@@ -51,4 +50,7 @@ public class ProfilingAspect implements InitializingBean {
         log.warn("Attention!!! @dev.shermende.support.spring.aop.profiling.annotation.Profiling annotation enabled");
     }
 
+    public void setJmxControl(JmxControl jmxControl) {
+        this.jmxControl = jmxControl;
+    }
 }

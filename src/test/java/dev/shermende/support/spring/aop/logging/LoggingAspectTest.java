@@ -4,27 +4,27 @@ import dev.shermende.support.spring.aop.logging.annotation.Logging;
 import dev.shermende.support.spring.jmx.JmxControl;
 import dev.shermende.support.spring.jmx.impl.ToggleJmxControlImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.Aspects;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
+@Slf4j
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {LoggingAspectTest.LoggingAspectTestConfiguration.class})
 public class LoggingAspectTest {
 
     @SpyBean
-    private LoggingAspect aspect;
+    private JmxControl jmxControl;
 
     @Autowired
     private LoggingAspectTestComponent component;
@@ -32,11 +32,10 @@ public class LoggingAspectTest {
     @Test
     public void logging() {
         component.convert(new Object());
-        verify(aspect, times(1)).logging(any());
+        then(jmxControl).should(times(1)).isEnabled();
     }
 
     @ComponentScan
-    @EnableAspectJAutoProxy(proxyTargetClass = true)
     public static class LoggingAspectTestConfiguration {
         @Bean
         public JmxControl jmxControl() {
@@ -44,8 +43,8 @@ public class LoggingAspectTest {
         }
 
         @Bean
-        public LoggingAspect interceptAspect(JmxControl jmxControl) {
-            return new LoggingAspect(jmxControl);
+        public LoggingAspect interceptAspect() {
+            return Aspects.aspectOf(LoggingAspect.class);
         }
     }
 
